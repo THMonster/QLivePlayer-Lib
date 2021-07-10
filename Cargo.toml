@@ -8,11 +8,20 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "1.8", features = ["full"] }
-tokio-tungstenite = "*"
-reqwest = { version = "*", features = ["json"] }
+# tokio-tungstenite = "*"
+reqwest = { version = "*", default-features = false, features = ["gzip", "json", "rustls-tls"] }
 serde_json = "*"
 serde = { version = "1", features = ["derive"] }
 rand = "*"
 regex = "*"
+fancy-regex = "*"
 uuid = { version = "0.8", features = ["v4"] }
 chrono = "*"
+url = "*"
+base64 = "*"
+libc = "*"
+html-escape = "*"
+
+[lib]
+name = "rust"
+crate-type = ["staticlib"]

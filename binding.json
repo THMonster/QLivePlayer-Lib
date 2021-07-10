@@ -1,0 +1,35 @@
+{
+    "cppFile": "Binding.cpp",
+    "rust": {
+        "dir": "./",
+        "interfaceModule": "interface",
+        "implementationModule": "implementation"
+    },
+    "objects": {
+        "QLivePlayerLib": {
+            "type": "Object",
+            "functions": {
+                "get_url": {
+                    "return": "QString",
+                    "mut": true,
+                    "arguments": [{
+		        "name": "room_url",
+		        "type": "QString"
+                    },{
+                    
+		        "name": "extras",
+		        "type": "QString"
+                    }]
+                },
+                "run_danmaku_client": {
+                    "return": "void",
+                    "mut": true,
+                    "arguments": [{
+		        "name": "unix_socket",
+		        "type": "QString"
+                    }]
+                }
+            }
+        }
+    }
+}

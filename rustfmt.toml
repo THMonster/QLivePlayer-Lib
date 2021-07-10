@@ -1,1 +1,9 @@
 edition = "2018"
+empty_item_single_line = false
+# fn_args_layout = "Compressed"
+imports_layout = "Vertical"
+max_width = 150
+# use_small_heuristics = "Max"
+chain_width = 150
+fn_call_width = 60
+attr_fn_like_width = 60

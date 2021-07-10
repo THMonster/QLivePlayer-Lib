@@ -35,11 +35,15 @@ impl Douyu {
         }
     }
     pub async fn get_live(
-        self,
+        &self,
         room_url: &str,
     ) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
         let mut ret = HashMap::new();
-        let rid = room_url.split("/").last().unwrap();
+        let rid = url::Url::parse(room_url)?
+            .path_segments()
+            .ok_or("rid parse error 1")?
+            .last()
+            .ok_or("rid parse error 2")?.to_string();
         let debug_messages = get_random_name(8);
         let decrypted_codes = get_random_name(8);
         let resoult = get_random_name(8);
@@ -109,7 +113,7 @@ impl Douyu {
             .to_string();
         let tsec = format!("{}", Local::now().timestamp());
         let mut args = Vec::new();
-        args.push((1, rid.to_string()));
+        args.push((1, rid.clone()));
         args.push((1, did.clone()));
         args.push((0, tsec.clone()));
 
