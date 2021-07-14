@@ -30,7 +30,6 @@ libc = "*"
 html-escape = "*"
 futures = "0.3"
 tars-stream = { path = "tars-stream"}
-bytes = "*"
 
 [lib]
 name = "rust"

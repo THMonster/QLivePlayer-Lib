@@ -1,11 +1,11 @@
 use bytes::{BufMut, Bytes, BytesMut};
-use errors::EncodeErr;
+use crate::errors::EncodeErr;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::mem;
-use tars_trait::{EnumToI32, StructToTars};
-use tars_type::TarsTypeMark::*;
-use tars_type::*;
+use crate::tars_trait::{EnumToI32, StructToTars};
+use crate::tars_type::TarsTypeMark::*;
+use crate::tars_type::*;
 
 const MAX_HEADER_LEN: usize = 2;
 const MAX_SIZE_LEN: usize = 4;

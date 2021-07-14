@@ -5,6 +5,7 @@ authors = ["zerolocust <zerolocust@gmail.com>"]
 description = "for tencent/Tars TARS Protocol encoding/decoding"
 homepage = "https://github.com/zerolocusta/tars-stream"
 repository = "https://github.com/zerolocusta/tars-stream"
+edition = "2018"
 
 license = "MIT"
 

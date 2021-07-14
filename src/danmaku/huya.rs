@@ -1,4 +1,3 @@
-use bytes;
 use futures::{stream::StreamExt, SinkExt};
 use regex::Regex;
 use reqwest::Url;
@@ -90,9 +89,9 @@ impl Huya {
         let mut ios = TarsDecoder::from(data.to_owned());
         let mut dm = HashMap::new();
         if ios.read_int32(0, false, -1)? == 7 {
-            let mut ios = TarsDecoder::from(&ios.read_bytes(1, false, bytes::Bytes::from(""))?);
+            let mut ios = TarsDecoder::from(&ios.read_bytes(1, false, tars_stream::bytes::Bytes::from(""))?);
             if ios.read_int64(1, false, -1)? == 1400 {
-                let mut ios = TarsDecoder::from(&ios.read_bytes(2, false, bytes::Bytes::from(""))?);
+                let mut ios = TarsDecoder::from(&ios.read_bytes(2, false, tars_stream::bytes::Bytes::from(""))?);
                 let user = ios.read_struct(
                     0,
                     false,
