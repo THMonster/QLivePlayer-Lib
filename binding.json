@@ -11,7 +11,7 @@
             "functions": {
                 "get_url": {
                     "return": "QString",
-                    "mut": true,
+                    "mut": false,
                     "arguments": [{
 		        "name": "room_url",
 		        "type": "QString"
@@ -25,9 +25,17 @@
                     "return": "void",
                     "mut": true,
                     "arguments": [{
-		        "name": "unix_socket",
+		        "name": "room_url",
 		        "type": "QString"
                     }]
+                },
+                "stop_danmaku_client": {
+                    "return": "void",
+                    "mut": true
+                },
+                "get_danmaku": {
+                    "return": "QString",
+                    "mut": true
                 }
             }
         }

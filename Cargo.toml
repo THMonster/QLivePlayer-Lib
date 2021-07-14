@@ -1,6 +1,6 @@
 [package]
 name = "qliveplayer_lib"
-version = "0.1.0"
+version = "0.4.0"
 authors = ["IsoaSFlus <me@isoasflus.com>"]
 edition = "2018"
 
@@ -8,11 +8,18 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "1.8", features = ["full"] }
-# tokio-tungstenite = "*"
-reqwest = { version = "*", default-features = false, features = ["gzip", "json", "rustls-tls"] }
+# tokio-rustls = "0.22"
+# webpki-roots = "*"
+# tokio-tungstenite = { version = "0.15", features = ["rustls-tls"] }
+tokio-tungstenite = { version = "*", features = ["native-tls"] }
+reqwest = { version = "*", features = ["gzip", "json"] }
+env_logger = "*"
+httparse = "*"
 serde_json = "*"
 serde = { version = "1", features = ["derive"] }
+bincode = "*"
 rand = "*"
+flate2  = { version = "*", features = [] }
 regex = "*"
 fancy-regex = "*"
 uuid = { version = "0.8", features = ["v4"] }
@@ -21,6 +28,9 @@ url = "*"
 base64 = "*"
 libc = "*"
 html-escape = "*"
+futures = "0.3"
+tars-stream = { path = "tars-stream"}
+bytes = "*"
 
 [lib]
 name = "rust"

@@ -67,8 +67,10 @@ impl QLivePlayerLibEmitter {
 pub trait QLivePlayerLibTrait {
     fn new(emit: QLivePlayerLibEmitter) -> Self;
     fn emit(&mut self) -> &mut QLivePlayerLibEmitter;
-    fn get_url(&mut self, room_url: String, extras: String) -> String;
-    fn run_danmaku_client(&mut self, unix_socket: String) -> ();
+    fn get_danmaku(&mut self) -> String;
+    fn get_url(&self, room_url: String, extras: String) -> String;
+    fn run_danmaku_client(&mut self, room_url: String) -> ();
+    fn stop_danmaku_client(&mut self) -> ();
 }
 
 #[no_mangle]
@@ -88,21 +90,35 @@ pub unsafe extern "C" fn q_live_player_lib_free(ptr: *mut QLivePlayerLib) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn q_live_player_lib_get_url(ptr: *mut QLivePlayerLib, room_url_str: *const c_ushort, room_url_len: c_int, extras_str: *const c_ushort, extras_len: c_int, d: *mut QString, set: extern fn(*mut QString, str: *const c_char, len: c_int)) {
+pub unsafe extern "C" fn q_live_player_lib_get_danmaku(ptr: *mut QLivePlayerLib, d: *mut QString, set: extern fn(*mut QString, str: *const c_char, len: c_int)) {
+    let o = &mut *ptr;
+    let r = o.get_danmaku();
+    let s: *const c_char = r.as_ptr() as *const c_char;
+    set(d, s, r.len() as i32);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn q_live_player_lib_get_url(ptr: *const QLivePlayerLib, room_url_str: *const c_ushort, room_url_len: c_int, extras_str: *const c_ushort, extras_len: c_int, d: *mut QString, set: extern fn(*mut QString, str: *const c_char, len: c_int)) {
     let mut room_url = String::new();
     set_string_from_utf16(&mut room_url, room_url_str, room_url_len);
     let mut extras = String::new();
     set_string_from_utf16(&mut extras, extras_str, extras_len);
-    let o = &mut *ptr;
+    let o = &*ptr;
     let r = o.get_url(room_url, extras);
     let s: *const c_char = r.as_ptr() as *const c_char;
     set(d, s, r.len() as i32);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn q_live_player_lib_run_danmaku_client(ptr: *mut QLivePlayerLib, unix_socket_str: *const c_ushort, unix_socket_len: c_int) {
-    let mut unix_socket = String::new();
-    set_string_from_utf16(&mut unix_socket, unix_socket_str, unix_socket_len);
+pub unsafe extern "C" fn q_live_player_lib_run_danmaku_client(ptr: *mut QLivePlayerLib, room_url_str: *const c_ushort, room_url_len: c_int) {
+    let mut room_url = String::new();
+    set_string_from_utf16(&mut room_url, room_url_str, room_url_len);
     let o = &mut *ptr;
-    o.run_danmaku_client(unix_socket)
+    o.run_danmaku_client(room_url)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn q_live_player_lib_stop_danmaku_client(ptr: *mut QLivePlayerLib) {
+    let o = &mut *ptr;
+    o.stop_danmaku_client()
 }
