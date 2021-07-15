@@ -122,6 +122,14 @@ pub fn run_danmaku_client(url: &str, dm_fifo: Arc<Mutex<LinkedList<HashMap<Strin
                         println!("danmaku client error: {:?}", e);
                     }
                 };
+            } else if url.contains("youtube.com/") {
+                let b = danmaku::youtube::Youtube::new();
+                match b.run(url, dm_fifo.clone()).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println!("danmaku client error: {:?}", e);
+                    }
+                };
             }
         };
         let check_stop = async move {
