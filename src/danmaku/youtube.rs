@@ -60,7 +60,7 @@ fn get_param(vid: &str, cid: &str) -> String {
     ]
     .concat();
     let continuation = crate::utils::rs(119693434, entity.as_ref());
-    url::form_urlencoded::byte_serialize(base64::encode(continuation).as_bytes()).collect()
+    url::form_urlencoded::byte_serialize(base64::encode_config(continuation, base64::URL_SAFE).as_bytes()).collect()
 }
 
 pub struct Youtube {
@@ -152,12 +152,11 @@ impl Youtube {
                     "visitorData": "",
                     "userAgent": &self.ua,
                     "clientName": "WEB",
-                    "clientVersion": format!("2.{}.01.00", (Utc::now() - chrono::Duration::days(1)).format("%Y%m%d")),
+                    "clientVersion": format!("2.{}.01.00", (Utc::now() - chrono::Duration::days(2)).format("%Y%m%d")),
                 },
             },
             "continuation": &ctn,
         });
-        ctn.clear();
         let body = serde_json::to_vec(&body)?;
         // println!("{}", String::from_utf8_lossy(&body));
 
@@ -171,6 +170,8 @@ impl Youtube {
             .json::<serde_json::Value>()
             .await?;
 
+        ctn.clear();
+        // println!("{:#?}", &resp);
         let con = resp.pointer("/continuationContents/liveChatContinuation/continuations/0").ok_or("gsc err 1")?;
 
         // println!("{:#?}", &con);

@@ -1,16 +1,37 @@
+use log::*;
 use std::{
     collections::{HashMap, LinkedList},
     sync::{Arc, Mutex},
 };
-use log::*;
-
 use tokio::runtime::Builder;
+
+struct TestUrl {
+    bilibili_live_url: String,
+    bilibili_video_url: String,
+    douyu_live_url: String,
+    huya_live_url: String,
+    youtube_live_url: String,
+    twitch_live_url: String,
+}
+impl TestUrl {
+    pub fn new() -> Self {
+        TestUrl {
+            bilibili_live_url: "https://live.bilibili.com/3".to_owned(),
+            bilibili_video_url: "https://www.bilibili.com/bangumi/play/ep391743".to_owned(),
+            douyu_live_url: "https://www.douyu.com/9999".to_owned(),
+            huya_live_url: "https://www.huya.com/825801".to_owned(),
+            youtube_live_url: "https://www.youtube.com/watch?v=wkW_cJHMQzM".to_owned(),
+            twitch_live_url: "https://www.twitch.tv/okcode".to_owned(),
+        }
+    }
+}
 
 #[test]
 fn test_bilibili_video() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::bilibili::Bilibili::new();
-        match b.get_video("https://www.bilibili.com/bangumi/play/ep391743", "").await {
+        match b.get_video(u.bilibili_video_url.as_ref(), "").await {
             Ok(it) => {
                 println!("{:?}", it);
             }
@@ -23,10 +44,11 @@ fn test_bilibili_video() {
 #[test]
 fn test_bilibili_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::bilibili::Bilibili::new();
         println!(
             "{:?}",
-            b.get_live("https://live.bilibili.com/3?a=1").await.unwrap()
+            b.get_live(u.bilibili_live_url.as_ref()).await.unwrap()
         );
     });
 }
@@ -34,10 +56,11 @@ fn test_bilibili_live() {
 #[test]
 fn test_douyu_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::douyu::Douyu::new();
         println!(
             "{:?}",
-            b.get_live("https://www.douyu.com/9999").await.unwrap()
+            b.get_live(u.douyu_live_url.as_ref()).await.unwrap()
         );
     });
 }
@@ -45,10 +68,11 @@ fn test_douyu_live() {
 #[test]
 fn test_huya_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::huya::Huya::new();
         println!(
             "{:?}",
-            b.get_live("https://www.huya.com/825801").await.unwrap()
+            b.get_live(u.huya_live_url.as_ref()).await.unwrap()
         );
     });
 }
@@ -56,11 +80,11 @@ fn test_huya_live() {
 #[test]
 fn test_youtube_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::youtube::Youtube::new();
         println!(
             "{:?}",
-            // b.get_live("https://www.youtube.com/watch?v=yrPqE8xf5mM").await.unwrap()
-            b.get_live("https://www.youtube.com/channel/UCkngxfPbmGyGl_RIq4FA3MQ").await.unwrap()
+            b.get_live(u.youtube_live_url.as_ref()).await.unwrap()
         );
     });
 }
@@ -68,10 +92,11 @@ fn test_youtube_live() {
 #[test]
 fn test_twitch_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::twitch::Twitch::new();
         println!(
             "{:?}",
-            b.get_live("https://www.twitch.tv/okcode").await.unwrap()
+            b.get_live(u.twitch_live_url.as_ref()).await.unwrap()
         );
     });
 }
@@ -79,11 +104,12 @@ fn test_twitch_live() {
 #[test]
 fn test_bilibili_danmaku() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::danmaku::bilibili::Bilibili::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
         let df1 = dm_fifo.clone();
         tokio::spawn(async move {
-            match b.run("https://live.bilibili.com/734", df1).await {
+            match b.run(u.bilibili_live_url.as_ref(), df1).await {
                 Ok(_) => {}
                 Err(e) => {
                     println!("danmaku client error: {:?}", e);
@@ -112,11 +138,12 @@ fn test_bilibili_danmaku() {
 fn test_douyu_danmaku() {
     env_logger::init();
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::danmaku::douyu::Douyu::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
         let df1 = dm_fifo.clone();
         tokio::spawn(async move {
-            match b.run("https://www.douyu.com/9999", df1).await {
+            match b.run(u.douyu_live_url.as_ref(), df1).await {
                 Ok(_) => {}
                 Err(e) => {
                     println!("danmaku client error: {:?}", e);
@@ -145,11 +172,12 @@ fn test_douyu_danmaku() {
 fn test_huya_danmaku() {
     env_logger::init();
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::danmaku::huya::Huya::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
         let df1 = dm_fifo.clone();
         tokio::spawn(async move {
-            match b.run("https://www.huya.com/kaerlol", df1).await {
+            match b.run(u.huya_live_url.as_ref(), df1).await {
                 Ok(_) => {}
                 Err(e) => {
                     println!("danmaku client error: {:?}", e);
@@ -179,6 +207,7 @@ fn test_youtube_danmaku() {
     env_logger::init();
     info!("start test!");
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::danmaku::youtube::Youtube::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
         let df1 = dm_fifo.clone();
@@ -199,7 +228,13 @@ fn test_youtube_danmaku() {
                 }
             }
         });
-        match b.run("https://www.youtube.com/channel/UChAnqc_AY5_I3Px5dig3X1Q", df1).await {
+        match b
+            .run(
+                u.youtube_live_url.as_ref(),
+                df1,
+            )
+            .await
+        {
             Ok(_) => {}
             Err(e) => {
                 println!("danmaku client error: {:?}", e);
@@ -212,11 +247,12 @@ fn test_youtube_danmaku() {
 fn test_twitch_danmaku() {
     env_logger::init();
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
         let b = qliveplayer_lib::danmaku::twitch::Twitch::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
         let df1 = dm_fifo.clone();
         tokio::spawn(async move {
-            match b.run("https://www.twitch.tv/tectone", df1).await {
+            match b.run(u.twitch_live_url.as_ref(), df1).await {
                 Ok(_) => {}
                 Err(e) => {
                     println!("danmaku client error: {:?}", e);
