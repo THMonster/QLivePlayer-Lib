@@ -1,11 +1,11 @@
+use chrono::prelude::*;
+use log::*;
+use regex::Regex;
+use serde_json::{json, Value};
 use std::{
     collections::{HashMap, LinkedList},
     sync::{Arc, Mutex},
 };
-
-use chrono::prelude::*;
-use regex::Regex;
-use serde_json::{json, Value};
 use tokio::time::sleep;
 
 fn get_param(vid: &str, cid: &str) -> String {
@@ -157,6 +157,7 @@ impl Youtube {
             },
             "continuation": &ctn,
         });
+        ctn.clear();
         let body = serde_json::to_vec(&body)?;
         // println!("{}", String::from_utf8_lossy(&body));
 
@@ -171,6 +172,7 @@ impl Youtube {
             .await?;
 
         let con = resp.pointer("/continuationContents/liveChatContinuation/continuations/0").ok_or("gsc err 1")?;
+
         // println!("{:#?}", &con);
         let metadata = match con.pointer("/invalidationContinuationData") {
             Some(it) => it,
@@ -182,7 +184,6 @@ impl Youtube {
                 },
             },
         };
-        ctn.clear();
         ctn.push_str(metadata.pointer("/continuation").ok_or("gsc err 3")?.as_str().ok_or("gsc err 3-2")?);
         let actions = resp.pointer("/continuationContents/liveChatContinuation/actions").ok_or("gsc err 4")?.as_array().ok_or("gsc err 4-2")?;
         for action in actions {
@@ -199,6 +200,10 @@ impl Youtube {
         let mut ctn = get_param(&vid, &cid);
 
         loop {
+            if ctn.trim().is_empty() {
+                warn!("ctn not found, regenerate...");
+                ctn.push_str(&get_param(&vid, &cid));
+            }
             let interval: u64;
             match self.get_single_chat(&mut ctn).await {
                 Ok(mut dm) => {
@@ -214,8 +219,8 @@ impl Youtube {
                         sleep(tokio::time::Duration::from_secs(2)).await;
                     }
                 }
-                Err(_) => {
-                    // println!("{:?}", e);
+                Err(e) => {
+                    warn!("{}", e);
                 }
             }
         }

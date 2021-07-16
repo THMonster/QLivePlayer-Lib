@@ -127,7 +127,7 @@ impl Bilibili {
     pub async fn get_video(&self, video_url: &str, cookie: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let mut ret: Vec<String> = Vec::new();
         if video_url.contains("bilibili.com/bangumi") {
-            let (bvid, cid, title, artist, season_type) = self.get_page_info_ep(video_url).await?;
+            let (bvid, cid, title, _artist, _season_type) = self.get_page_info_ep(video_url).await?;
             ret.push(title);
             let mut param1 = Vec::new();
             param1.push(("cid", cid.as_str()));

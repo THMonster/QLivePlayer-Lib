@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::{collections::HashMap, str};
-use url::Url;
 
 pub struct Huya {}
 
@@ -10,7 +9,7 @@ impl Huya {
     }
 
     pub async fn get_live(&self, room_url: &str) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
-        let rid = Url::parse(room_url)?.path_segments().ok_or("rid parse error 1")?.last().ok_or("rid parse error 2")?.to_string();
+        // let rid = Url::parse(room_url)?.path_segments().ok_or("rid parse error 1")?.last().ok_or("rid parse error 2")?.to_string();
         let client = reqwest::Client::new();
         let mut ret = HashMap::new();
         let resp =

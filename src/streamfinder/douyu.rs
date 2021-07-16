@@ -23,14 +23,14 @@ fn get_js_md5() -> String {
 
 pub struct Douyu {
     api1: String,
-    api2: String,
+    // api2: String,
     api3: String,
 }
 impl Douyu {
     pub fn new() -> Self {
         Douyu {
             api1: String::from("https://www.douyu.com/betard/"),
-            api2: String::from("https://open.douyucdn.cn/api/RoomApi/room/"),
+            // api2: String::from("https://open.douyucdn.cn/api/RoomApi/room/"),
             api3: String::from("https://www.douyu.com/lapi/live/getH5Play/"),
         }
     }

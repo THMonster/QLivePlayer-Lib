@@ -2,6 +2,7 @@ use std::{
     collections::{HashMap, LinkedList},
     sync::{Arc, Mutex},
 };
+use log::*;
 
 use tokio::runtime::Builder;
 
@@ -176,6 +177,7 @@ fn test_huya_danmaku() {
 #[test]
 fn test_youtube_danmaku() {
     env_logger::init();
+    info!("start test!");
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let b = qliveplayer_lib::danmaku::youtube::Youtube::new();
         let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
@@ -197,7 +199,7 @@ fn test_youtube_danmaku() {
                 }
             }
         });
-        match b.run("https://www.youtube.com/watch?v=CnRI1kreeZ8", df1).await {
+        match b.run("https://www.youtube.com/channel/UChAnqc_AY5_I3Px5dig3X1Q", df1).await {
             Ok(_) => {}
             Err(e) => {
                 println!("danmaku client error: {:?}", e);

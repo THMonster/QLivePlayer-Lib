@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, LinkedList},
     sync::{atomic::AtomicBool, Arc, Mutex},
-    thread::{sleep, sleep_ms},
+    thread::sleep,
     time::Duration,
 };
 

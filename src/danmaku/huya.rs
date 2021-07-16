@@ -11,10 +11,10 @@ use tokio::time::sleep;
 use tokio_tungstenite::connect_async;
 
 struct HuyaUser {
-    uid: i64,
-    imid: i64,
+    _uid: i64,
+    _imid: i64,
     name: String,
-    gender: i32,
+    _gender: i32,
 }
 
 struct HuyaDanmaku {
@@ -27,7 +27,7 @@ impl StructFromTars for HuyaUser {
         let imid = decoder.read_int64(1, false, -1)?;
         let name = decoder.read_string(2, false, "".to_string())?;
         let gender = decoder.read_int32(3, false, -1)?;
-        Ok(HuyaUser { uid, imid, name, gender })
+        Ok(HuyaUser { _uid: uid, _imid: imid, name, _gender: gender })
     }
 }
 impl StructFromTars for HuyaDanmaku {
@@ -96,10 +96,10 @@ impl Huya {
                     0,
                     false,
                     HuyaUser {
-                        uid: -1,
-                        imid: -1,
+                        _uid: -1,
+                        _imid: -1,
                         name: "".to_owned(),
-                        gender: 1,
+                        _gender: 1,
                     },
                 )?;
                 dm.insert("name".to_owned(), user.name);
