@@ -207,3 +207,36 @@ fn test_youtube_danmaku() {
         };
     });
 }
+
+#[test]
+fn test_twitch_danmaku() {
+    env_logger::init();
+    Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let b = qliveplayer_lib::danmaku::twitch::Twitch::new();
+        let dm_fifo = Arc::new(Mutex::new(LinkedList::<HashMap<String, String>>::new()));
+        let df1 = dm_fifo.clone();
+        tokio::spawn(async move {
+            match b.run("https://www.twitch.tv/tectone", df1).await {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("danmaku client error: {:?}", e);
+                }
+            };
+        });
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            if let Ok(mut df) = dm_fifo.lock() {
+                while let Some(d) = df.pop_front() {
+                    if d.get("msg_type").unwrap_or(&"other".to_owned()).eq("danmaku") {
+                        println!(
+                            "{}[{}] {}",
+                            d.get("color").unwrap_or(&"ffffff".to_owned()),
+                            d.get("name").unwrap_or(&"unknown".to_owned()),
+                            d.get("content").unwrap_or(&" ".to_owned()),
+                        )
+                    }
+                }
+            }
+        }
+    });
+}
