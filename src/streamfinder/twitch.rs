@@ -20,7 +20,7 @@ impl Twitch {
         let client = reqwest::Client::new();
         let mut ret = HashMap::new();
         let resp = client
-            .get(format!("https://m.twitch.tv/{}", &rid))
+            .get(format!("https://m.twitch.tv/{}/profile", &rid))
             .header("User-Agent", crate::utils::gen_ua())
             .header("Accept-Language", "en-US")
             .header("Referer", "https://m.twitch.tv/")
@@ -28,7 +28,7 @@ impl Twitch {
             .await?
             .text()
             .await?;
-        let re = Regex::new(r#""BroadcastSettings\}\|\{.+?":.+?"title":"(.+?)""#).unwrap();
+        let re = Regex::new(r#""BroadcastSettings\}\|\{[^"]+":.+?"title":"(.+?)""#).unwrap();
         ret.insert(
             String::from("title"),
             format!(
@@ -72,7 +72,7 @@ impl Twitch {
             .await?;
 
         // println!("{}", &resp);
-        let re = Regex::new(r#"[\s\S]+?\n(http\S+?)\n"#).unwrap();
+        let re = Regex::new(r#"[\s\S]+?\n(http[^\n]+)"#).unwrap();
         ret.insert(
             String::from("url"),
             format!(
