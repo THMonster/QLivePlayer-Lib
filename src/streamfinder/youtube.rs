@@ -71,6 +71,7 @@ impl Youtube {
                 String::from("title"),
                 j.pointer("/videoDetails/title").ok_or("get_live err 8")?.as_str().ok_or("get_live err 8-2")?.to_owned(),
             );
+            break;
         }
         if hls_manifest.is_empty() {
             return Err(Box::new(std::io::Error::new(
