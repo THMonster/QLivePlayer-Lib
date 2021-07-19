@@ -11,8 +11,8 @@ tokio = { version = "1.8", features = ["full"] }
 # tokio-rustls = "0.22"
 # webpki-roots = "*"
 # tokio-tungstenite = { version = "0.15", features = ["rustls-tls"] }
-tokio-tungstenite = { version = "*", features = ["native-tls"] }
-reqwest = { version = "*", features = ["gzip", "json"] }
+tokio-tungstenite = { version = "*", features = ["native-tls-vendored"] }
+reqwest = { version = "*", default-features = false, features = ["gzip", "json", "native-tls-vendored"] }
 log = "*"
 env_logger = "*"
 httparse = "*"
