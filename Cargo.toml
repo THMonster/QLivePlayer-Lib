@@ -32,6 +32,6 @@ html-escape = "*"
 futures = "0.3"
 tars-stream = { path = "tars-stream"}
 
-[lib]
-name = "rust"
-crate-type = ["staticlib"]
+# [lib]
+# name = "rust"
+# crate-type = ["staticlib"]

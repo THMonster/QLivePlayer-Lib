@@ -19,7 +19,7 @@ impl Youtube {
             room_url.to_string()
         };
         let mut ret = HashMap::new();
-        let mut hls_manifest = "".to_owned();
+        let mut dash_urls = "".to_owned();
         for _ in 0u8..=1u8 {
             let resp = client
                 .get(&vurl)
@@ -65,38 +65,39 @@ impl Youtube {
                 vurl.push_str(format!("https://www.youtube.com/watch?v={}", &vid).as_str());
                 continue;
             };
-            hls_manifest.clear();
-            hls_manifest.push_str(j.pointer("/streamingData/hlsManifestUrl").ok_or("get_live err 5")?.as_str().ok_or("get_live err 5-2")?);
+            dash_urls.clear();
+            let mut url_v = "".to_owned();
+            let mut url_a = "".to_owned();
+            for u in j.pointer("/streamingData/adaptiveFormats").ok_or("get_live err 5")?.as_array().ok_or("get_live err 5-2")? {
+                if url_v.is_empty() {
+                    if u.pointer("/mimeType").ok_or("get_live err 5-3")?.as_str().ok_or("get_live err 5-4")?.starts_with("video") {
+                        url_v.push_str(u.pointer("/url").ok_or("get_live err 5-5")?.as_str().ok_or("get_live err 5-6")?)
+                    }
+                }
+                if url_a.is_empty() {
+                    if u.pointer("/mimeType").ok_or("get_live err 5-7")?.as_str().ok_or("get_live err 5-8")?.starts_with("audio") {
+                        url_a.push_str(u.pointer("/url").ok_or("get_live err 5-9")?.as_str().ok_or("get_live err 5-10")?)
+                    }
+                }
+            }
+            if !url_v.is_empty() && !url_a.is_empty() {
+                dash_urls.push_str(&url_v);
+                dash_urls.push('\n');
+                dash_urls.push_str(&url_a);
+            }
             ret.insert(
                 String::from("title"),
                 j.pointer("/videoDetails/title").ok_or("get_live err 8")?.as_str().ok_or("get_live err 8-2")?.to_owned(),
             );
             break;
         }
-        if hls_manifest.is_empty() {
+        if dash_urls.is_empty() {
             return Err(Box::new(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "no stream",
             )));
         }
-        let resp = client
-            .get(&hls_manifest)
-            .header("User-Agent", crate::utils::gen_ua())
-            .header("Accept-Language", "en-US")
-            .header("Referer", "https://www.youtube.com/")
-            .send()
-            .await?
-            .text()
-            .await?;
-        // println!("{}",&resp);
-        let re = Regex::new(r#"[\s\S]+\n(http\S+?)\n"#).unwrap();
-        ret.insert(
-            String::from("url"),
-            format!(
-                "{}",
-                re.captures(&resp).ok_or("get_live err 6")?[1].to_string()
-            ),
-        );
+        ret.insert(String::from("url"), dash_urls);
         Ok(ret)
     }
 }
