@@ -84,6 +84,14 @@ impl Youtube {
                 dash_urls.push_str(&url_v);
                 dash_urls.push('\n');
                 dash_urls.push_str(&url_a);
+                let resp = client
+                    .get(&url_v)
+                    .header("User-Agent", crate::utils::gen_ua())
+                    .header("Range", "bytes=0-1")
+                    .send()
+                    .await?;
+                dash_urls.push('\n');
+                dash_urls.push_str(resp.headers().get("X-Head-Seqnum").ok_or("get_live err 9")?.to_str()?);
             }
             ret.insert(
                 String::from("title"),
