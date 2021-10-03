@@ -26,12 +26,13 @@ fancy-regex = "*"
 uuid = { version = "0.8", features = ["v4"] }
 chrono = "*"
 url = "*"
+urlencoding = "*"
 base64 = "*"
 libc = "*"
 html-escape = "*"
 futures = "0.3"
 tars-stream = { path = "tars-stream"}
 
-[lib]
-name = "rust"
-crate-type = ["staticlib"]
+# [lib]
+# name = "rust"
+# crate-type = ["staticlib"]

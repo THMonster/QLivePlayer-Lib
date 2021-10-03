@@ -98,46 +98,49 @@ pub fn get_url(url: &str, extras: &str) -> String {
 pub fn run_danmaku_client(url: &str, dm_fifo: Arc<Mutex<LinkedList<HashMap<String, String>>>>, stop_flag: Arc<AtomicBool>) {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let dmc = async move {
-            if url.contains("live.bilibili.com") {
-                let b = danmaku::bilibili::Bilibili::new();
-                match b.run(url, dm_fifo.clone()).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("danmaku client error: {:?}", e);
-                    }
-                };
-            } else if url.contains("douyu.com/") {
-                let b = danmaku::douyu::Douyu::new();
-                match b.run(url, dm_fifo.clone()).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("danmaku client error: {:?}", e);
-                    }
-                };
-            } else if url.contains("huya.com/") {
-                let b = danmaku::huya::Huya::new();
-                match b.run(url, dm_fifo.clone()).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("danmaku client error: {:?}", e);
-                    }
-                };
-            } else if url.contains("youtube.com/") {
-                let b = danmaku::youtube::Youtube::new();
-                match b.run(url, dm_fifo.clone()).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("danmaku client error: {:?}", e);
-                    }
-                };
-            } else if url.contains("twitch.tv/") {
-                let b = danmaku::twitch::Twitch::new();
-                match b.run(url, dm_fifo.clone()).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("danmaku client error: {:?}", e);
-                    }
-                };
+            loop {
+                if url.contains("live.bilibili.com") {
+                    let b = danmaku::bilibili::Bilibili::new();
+                    match b.run(url, dm_fifo.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("danmaku client error: {:?}", e);
+                        }
+                    };
+                } else if url.contains("douyu.com/") {
+                    let b = danmaku::douyu::Douyu::new();
+                    match b.run(url, dm_fifo.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("danmaku client error: {:?}", e);
+                        }
+                    };
+                } else if url.contains("huya.com/") {
+                    let b = danmaku::huya::Huya::new();
+                    match b.run(url, dm_fifo.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("danmaku client error: {:?}", e);
+                        }
+                    };
+                } else if url.contains("youtube.com/") {
+                    let b = danmaku::youtube::Youtube::new();
+                    match b.run(url, dm_fifo.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("danmaku client error: {:?}", e);
+                        }
+                    };
+                } else if url.contains("twitch.tv/") {
+                    let b = danmaku::twitch::Twitch::new();
+                    match b.run(url, dm_fifo.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("danmaku client error: {:?}", e);
+                        }
+                    };
+                }
+                sleep(tokio::time::Duration::from_secs(1)).await;
             }
         };
         let check_stop = async move {

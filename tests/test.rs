@@ -17,10 +17,10 @@ impl TestUrl {
     pub fn new() -> Self {
         TestUrl {
             bilibili_live_url: "https://live.bilibili.com/3".to_owned(),
-            bilibili_video_url: "https://www.bilibili.com/bangumi/play/ep391743".to_owned(),
+            bilibili_video_url: "https://www.bilibili.com/bangumi/play/ep422334".to_owned(),
             douyu_live_url: "https://www.douyu.com/9999".to_owned(),
             huya_live_url: "https://www.huya.com/825801".to_owned(),
-            youtube_live_url: "https://www.youtube.com/watch?v=uKACIDRlf9M".to_owned(),
+            youtube_live_url: "https://www.youtube.com/watch?v=eyTi9KKEcZc".to_owned(),
             twitch_live_url: "https://www.twitch.tv/okcode".to_owned(),
         }
     }

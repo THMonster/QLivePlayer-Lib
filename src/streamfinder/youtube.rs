@@ -71,12 +71,42 @@ impl Youtube {
             for u in j.pointer("/streamingData/adaptiveFormats").ok_or("get_live err 5")?.as_array().ok_or("get_live err 5-2")? {
                 if url_v.is_empty() {
                     if u.pointer("/mimeType").ok_or("get_live err 5-3")?.as_str().ok_or("get_live err 5-4")?.starts_with("video") {
-                        url_v.push_str(u.pointer("/url").ok_or("get_live err 5-5")?.as_str().ok_or("get_live err 5-6")?)
+                        if let Some(j_u) = u.pointer("/url") {
+                            url_v.push_str(j_u.as_str().ok_or("get_live err 5-6")?);
+                        } else {
+                            let re = Regex::new(r"url=([^&]+)").unwrap();
+                            let temp_url = urlencoding::decode(
+                                re.captures(u.pointer("/signatureCipher").ok_or("get_live err 5-5")?.as_str().ok_or("get_live err 5-12")?)
+                                    .ok_or("get_live err 5-11")?[1]
+                                    .to_string()
+                                    .as_str(),
+                            )?
+                            .to_string();
+                            let resp =
+                                client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.json::<serde_json::Value>().await?;
+                            // let resp = client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.text().await?;
+                            // println!("{}", resp);
+                            url_v.push_str(resp.pointer("/url").ok_or("get_live err 5-15")?.as_str().ok_or("get_live err 5-16")?);
+                        }
                     }
                 }
                 if url_a.is_empty() {
                     if u.pointer("/mimeType").ok_or("get_live err 5-7")?.as_str().ok_or("get_live err 5-8")?.starts_with("audio") {
-                        url_a.push_str(u.pointer("/url").ok_or("get_live err 5-9")?.as_str().ok_or("get_live err 5-10")?)
+                        if let Some(j_u) = u.pointer("/url") {
+                            url_a.push_str(j_u.as_str().ok_or("get_live err 5-10")?);
+                        } else {
+                            let re = Regex::new(r"url=([^&]+)").unwrap();
+                            let temp_url = urlencoding::decode(
+                                re.captures(u.pointer("/signatureCipher").ok_or("get_live err 5-9")?.as_str().ok_or("get_live err 5-13")?)
+                                    .ok_or("get_live err 5-14")?[1]
+                                    .to_string()
+                                    .as_str(),
+                            )?
+                            .to_string();
+                            let resp =
+                                client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.json::<serde_json::Value>().await?;
+                            url_a.push_str(resp.pointer("/url").ok_or("get_live err 5-17")?.as_str().ok_or("get_live err 5-18")?);
+                        }
                     }
                 }
             }
@@ -84,12 +114,8 @@ impl Youtube {
                 dash_urls.push_str(&url_v);
                 dash_urls.push('\n');
                 dash_urls.push_str(&url_a);
-                let resp = client
-                    .get(&url_v)
-                    .header("User-Agent", crate::utils::gen_ua())
-                    .header("Range", "bytes=0-1")
-                    .send()
-                    .await?;
+                let resp = client.get(&url_v).header("User-Agent", crate::utils::gen_ua()).header("Range", "bytes=0-1").send().await?;
+                // println!("{:?}", resp.text().await);
                 dash_urls.push('\n');
                 dash_urls.push_str(resp.headers().get("X-Head-Seqnum").ok_or("get_live err 9")?.to_str()?);
             }

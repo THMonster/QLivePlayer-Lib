@@ -151,6 +151,7 @@ impl Bilibili {
                 .await?
                 .json::<serde_json::Value>()
                 .await?;
+            // println!("{:?}", &resp);
             let j = resp.pointer("/result").ok_or("get_video pje 1")?;
             if j.pointer("/dash").is_some() {
                 let dash_id = j.pointer("/dash/video/0/id").ok_or("get_video pje 2")?.as_i64().ok_or("get_video ce 1")?;
