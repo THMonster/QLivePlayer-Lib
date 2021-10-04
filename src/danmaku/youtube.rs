@@ -1,6 +1,7 @@
 use chrono::prelude::*;
 use log::*;
 use regex::Regex;
+use reqwest::Client;
 use serde_json::{json, Value};
 use std::{
     collections::{HashMap, LinkedList},
@@ -144,7 +145,7 @@ impl Youtube {
         Ok(d)
     }
 
-    async fn get_single_chat(&self, ctn: &mut String) -> Result<Vec<HashMap<String, String>>, Box<dyn std::error::Error>> {
+    async fn get_single_chat(&self, ctn: &mut String, client: Arc<Client>) -> Result<Vec<HashMap<String, String>>, Box<dyn std::error::Error>> {
         let mut ret = Vec::new();
         let body = json!({
             "context": {
@@ -160,7 +161,7 @@ impl Youtube {
         let body = serde_json::to_vec(&body)?;
         // println!("{}", String::from_utf8_lossy(&body));
 
-        let client = reqwest::Client::new();
+        // let client = reqwest::Client::new();
         let resp = client
             .post(format!("https://www.youtube.com/{}", &self.key))
             .header("User-Agent", &self.ua)
@@ -199,6 +200,7 @@ impl Youtube {
     pub async fn run(&self, url: &str, dm_fifo: Arc<Mutex<LinkedList<HashMap<String, String>>>>) -> Result<(), Box<dyn std::error::Error>> {
         let (vid, cid) = self.get_room_info(url).await?;
         let mut ctn = get_param(&vid, &cid);
+        let http_client = Arc::new(reqwest::Client::new());
 
         loop {
             if ctn.trim().is_empty() {
@@ -206,7 +208,7 @@ impl Youtube {
                 ctn.push_str(&get_param(&vid, &cid));
             }
             let interval: u64;
-            match self.get_single_chat(&mut ctn).await {
+            match self.get_single_chat(&mut ctn, http_client.clone()).await {
                 Ok(mut dm) => {
                     if dm.len() > 0 {
                         interval = 2000 / dm.len() as u64;
@@ -222,6 +224,7 @@ impl Youtube {
                 }
                 Err(e) => {
                     warn!("{}", e);
+                    sleep(tokio::time::Duration::from_secs(2)).await;
                 }
             }
         }
