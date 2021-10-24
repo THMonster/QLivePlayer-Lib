@@ -9,6 +9,7 @@ use tokio::{runtime::Builder, time::sleep};
 pub mod danmaku;
 mod implementation;
 pub mod interface;
+pub mod streamer;
 pub mod streamfinder;
 pub mod utils;
 
@@ -154,5 +155,29 @@ pub fn run_danmaku_client(url: &str, dm_fifo: Arc<Mutex<LinkedList<HashMap<Strin
         pin_mut!(dmc);
         pin_mut!(check_stop);
         let _ = futures::future::select(dmc, check_stop).await;
+    });
+}
+
+pub fn run_streamer(streamer_type: String, url: String, extra: String, loading: Arc<AtomicBool>, stop_flag: Arc<AtomicBool>) {
+    Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let check_stop = async move {
+            loop {
+                sleep(tokio::time::Duration::from_secs(1)).await;
+                if stop_flag.load(std::sync::atomic::Ordering::SeqCst) {
+                    break;
+                }
+            }
+        };
+        let streamer_task = if streamer_type.eq("youtube") {
+            async move {
+                let yt = streamer::youtube::Youtube::new(url, extra, loading);
+                yt.run().await;
+            }
+        } else {
+            return;
+        };
+        pin_mut!(streamer_task);
+        pin_mut!(check_stop);
+        let _ = futures::future::select(streamer_task, check_stop).await;
     });
 }

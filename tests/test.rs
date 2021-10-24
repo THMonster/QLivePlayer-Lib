@@ -20,7 +20,7 @@ impl TestUrl {
             bilibili_video_url: "https://www.bilibili.com/bangumi/play/ep422334".to_owned(),
             douyu_live_url: "https://www.douyu.com/9999".to_owned(),
             huya_live_url: "https://www.huya.com/825801".to_owned(),
-            youtube_live_url: "https://www.youtube.com/watch?v=i3Ia7uG2tbE".to_owned(),
+            youtube_live_url: "https://www.youtube.com/watch?v=5XDDUMAl1sE".to_owned(),
             twitch_live_url: "https://www.twitch.tv/okcode".to_owned(),
         }
     }
@@ -58,10 +58,7 @@ fn test_douyu_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::douyu::Douyu::new();
-        println!(
-            "{:?}",
-            b.get_live(u.douyu_live_url.as_ref()).await.unwrap()
-        );
+        println!("{:?}", b.get_live(u.douyu_live_url.as_ref()).await.unwrap());
     });
 }
 
@@ -70,15 +67,13 @@ fn test_huya_live() {
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::huya::Huya::new();
-        println!(
-            "{:?}",
-            b.get_live(u.huya_live_url.as_ref()).await.unwrap()
-        );
+        println!("{:?}", b.get_live(u.huya_live_url.as_ref()).await.unwrap());
     });
 }
 
 #[test]
 fn test_youtube_live() {
+    env_logger::init();
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let u = TestUrl::new();
         let b = qliveplayer_lib::streamfinder::youtube::Youtube::new();
@@ -228,13 +223,7 @@ fn test_youtube_danmaku() {
                 }
             }
         });
-        match b
-            .run(
-                u.youtube_live_url.as_ref(),
-                df1,
-            )
-            .await
-        {
+        match b.run(u.youtube_live_url.as_ref(), df1).await {
             Ok(_) => {}
             Err(e) => {
                 println!("danmaku client error: {:?}", e);

@@ -11,6 +11,7 @@ pub struct QLivePlayerLib {
     emit: QLivePlayerLibEmitter,
     dm_fifo: Arc<Mutex<LinkedList<HashMap<String, String>>>>,
     stop_flag: Arc<AtomicBool>,
+    is_streamer_loading: Arc<AtomicBool>,
 }
 
 impl QLivePlayerLibTrait for QLivePlayerLib {
@@ -20,6 +21,7 @@ impl QLivePlayerLibTrait for QLivePlayerLib {
             emit,
             dm_fifo,
             stop_flag: Arc::new(AtomicBool::new(false)),
+            is_streamer_loading: Arc::new(AtomicBool::new(true)),
         }
     }
 
@@ -48,10 +50,12 @@ impl QLivePlayerLibTrait for QLivePlayerLib {
     }
 
     fn get_url(&self, room_url: String, extras: String) -> String {
+        let _ = env_logger::try_init();
         crate::get_url(&room_url, &extras)
     }
 
     fn run_danmaku_client(&mut self, url: String) -> () {
+        let _ = env_logger::try_init();
         crate::run_danmaku_client(&url, self.dm_fifo.clone(), self.stop_flag.clone());
         ()
     }
@@ -59,5 +63,22 @@ impl QLivePlayerLibTrait for QLivePlayerLib {
     fn stop_danmaku_client(&mut self) -> () {
         self.stop_flag.fetch_or(true, std::sync::atomic::Ordering::SeqCst);
         sleep(Duration::from_millis(1200));
+    }
+
+    fn check_streamer_loading(&self) -> () {
+        while self.is_streamer_loading.load(std::sync::atomic::Ordering::SeqCst) {
+            sleep(std::time::Duration::from_millis(100));
+        }
+    }
+
+    fn run_streamer(&self, streamer_type: String, url: String, extra: String) -> () {
+        let _ = env_logger::try_init();
+        crate::run_streamer(
+            streamer_type,
+            url,
+            extra,
+            self.is_streamer_loading.clone(),
+            self.stop_flag.clone(),
+        );
     }
 }

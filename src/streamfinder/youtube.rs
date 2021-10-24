@@ -1,5 +1,8 @@
+use log::debug;
 use regex::Regex;
 use std::collections::HashMap;
+
+use crate::utils;
 
 pub struct Youtube {}
 
@@ -9,7 +12,7 @@ impl Youtube {
     }
 
     pub async fn get_live(&self, room_url: &str) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder().user_agent(utils::gen_ua()).timeout(tokio::time::Duration::from_secs(10)).build()?;
         let mut cid = "".to_owned();
         let mut vurl = if room_url.contains("youtube.com/channel/") {
             let re = Regex::new(r"youtube.com/channel/([^/?]+)").unwrap();
@@ -21,15 +24,8 @@ impl Youtube {
         let mut ret = HashMap::new();
         let mut dash_urls = "".to_owned();
         for _ in 0u8..=1u8 {
-            let resp = client
-                .get(&vurl)
-                .header("User-Agent", crate::utils::gen_ua())
-                .header("Accept-Language", "en-US")
-                .header("Referer", "https://www.youtube.com/")
-                .send()
-                .await?
-                .text()
-                .await?;
+            let resp =
+                client.get(&vurl).header("Accept-Language", "en-US").header("Referer", "https://www.youtube.com/").send().await?.text().await?;
             let c = || -> Result<serde_json::Value, Box<dyn std::error::Error>> {
                 let re = Regex::new(r"ytInitialPlayerResponse\s*=\s*(\{.+?\});.*?</script>").unwrap();
                 let j: serde_json::Value = serde_json::from_str(re.captures(&resp).ok_or("get_live err 4")?[1].to_string().as_ref())?;
@@ -48,15 +44,8 @@ impl Youtube {
                     break;
                 }
                 let ch_url = format!("https://www.youtube.com/channel/{}/videos", &cid);
-                let resp = client
-                    .get(&ch_url)
-                    .header("User-Agent", crate::utils::gen_ua())
-                    .header("Accept-Language", "en-US")
-                    .header("Referer", "https://www.youtube.com/")
-                    .send()
-                    .await?
-                    .text()
-                    .await?;
+                let resp =
+                    client.get(&ch_url).header("Accept-Language", "en-US").header("Referer", "https://www.youtube.com/").send().await?.text().await?;
                 let re = fancy_regex::Regex::new(r#""gridVideoRenderer"((.(?!"gridVideoRenderer"))(?!"style":"UPCOMING"))+"label":"(LIVE|LIVE NOW|PREMIERING NOW)"([\s\S](?!"style":"UPCOMING"))+?("gridVideoRenderer"|</script>)"#).unwrap();
                 let t = re.captures(&resp)?.ok_or("get_live err 2")?.get(0).ok_or("get_live err 2 2")?.as_str();
                 let re = Regex::new(r#""gridVideoRenderer".+?"videoId":"(.+?)""#).unwrap();
@@ -66,58 +55,70 @@ impl Youtube {
                 continue;
             };
             dash_urls.clear();
-            let mut url_v = "".to_owned();
-            let mut url_a = "".to_owned();
-            for u in j.pointer("/streamingData/adaptiveFormats").ok_or("get_live err 5")?.as_array().ok_or("get_live err 5-2")? {
-                if url_v.is_empty() {
-                    if u.pointer("/mimeType").ok_or("get_live err 5-3")?.as_str().ok_or("get_live err 5-4")?.starts_with("video") {
-                        if let Some(j_u) = u.pointer("/url") {
-                            url_v.push_str(j_u.as_str().ok_or("get_live err 5-6")?);
-                        } else {
-                            let re = Regex::new(r"url=([^&]+)").unwrap();
-                            let temp_url = urlencoding::decode(
-                                re.captures(u.pointer("/signatureCipher").ok_or("get_live err 5-5")?.as_str().ok_or("get_live err 5-12")?)
-                                    .ok_or("get_live err 5-11")?[1]
-                                    .to_string()
-                                    .as_str(),
-                            )?
-                            .to_string();
-                            let resp =
-                                client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.json::<serde_json::Value>().await?;
-                            // let resp = client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.text().await?;
-                            // println!("{}", resp);
-                            url_v.push_str(resp.pointer("/url").ok_or("get_live err 5-15")?.as_str().ok_or("get_live err 5-16")?);
+            let mut video_base_url = Vec::new();
+            let mut audio_base_url = None;
+            let mut sq = 0;
+            let mpd_url = j.pointer("/streamingData/dashManifestUrl").ok_or("get_live err 5")?.as_str().ok_or("get_live err 5-2")?;
+            let resp = client
+                .get(mpd_url)
+                .header("User-Agent", crate::utils::gen_ua())
+                .header("Accept-Language", "en-US")
+                .header("Referer", "https://www.youtube.com/")
+                .send()
+                .await?
+                .text()
+                .await?;
+            let doc = roxmltree::Document::parse(resp.as_str())?;
+            let elem_vs: Vec<roxmltree::Node> = doc
+                .descendants()
+                .filter(|n| n.tag_name().name() == "AdaptationSet" && n.attribute("mimeType").unwrap_or("").contains("video"))
+                .collect();
+            let mut tmpnode = None;
+            for elem_v in elem_vs {
+                let mut url = None;
+                for st in elem_v.descendants() {
+                    if st.has_attribute("bandwidth") {
+                        debug!("{:?}", &st);
+                        for e in st.descendants() {
+                            if e.tag_name().name().eq("BaseURL") {
+                                url = e.text();
+                            }
                         }
                     }
                 }
-                if url_a.is_empty() {
-                    if u.pointer("/mimeType").ok_or("get_live err 5-7")?.as_str().ok_or("get_live err 5-8")?.starts_with("audio") {
-                        if let Some(j_u) = u.pointer("/url") {
-                            url_a.push_str(j_u.as_str().ok_or("get_live err 5-10")?);
-                        } else {
-                            let re = Regex::new(r"url=([^&]+)").unwrap();
-                            let temp_url = urlencoding::decode(
-                                re.captures(u.pointer("/signatureCipher").ok_or("get_live err 5-9")?.as_str().ok_or("get_live err 5-13")?)
-                                    .ok_or("get_live err 5-14")?[1]
-                                    .to_string()
-                                    .as_str(),
-                            )?
-                            .to_string();
-                            let resp =
-                                client.get(temp_url).header("User-Agent", crate::utils::gen_ua()).send().await?.json::<serde_json::Value>().await?;
-                            url_a.push_str(resp.pointer("/url").ok_or("get_live err 5-17")?.as_str().ok_or("get_live err 5-18")?);
-                        }
-                    }
+                if url.is_some() {
+                    video_base_url.push(url.unwrap());
                 }
             }
-            if !url_v.is_empty() && !url_a.is_empty() {
-                dash_urls.push_str(&url_v);
+            let elem_a = doc
+                .descendants()
+                .find(|n| n.tag_name().name() == "AdaptationSet" && n.attribute("mimeType").unwrap_or("").contains("audio"))
+                .unwrap();
+            for e in elem_a.descendants() {
+                if e.has_attribute("bandwidth") {
+                    tmpnode = Some(e);
+                }
+            }
+            for e in tmpnode.unwrap().descendants() {
+                if e.tag_name().name().eq("SegmentList") {
+                    for seg in e.descendants() {
+                        if seg.tag_name().name().eq("SegmentURL") {
+                            let spl: Vec<_> = seg.attribute("media").unwrap_or("").split("/").collect();
+                            sq = spl[1].parse()?;
+                        }
+                    }
+                }
+                if e.tag_name().name().eq("BaseURL") {
+                    audio_base_url = e.text();
+                }
+            }
+
+            if !video_base_url.is_empty() && audio_base_url.is_some() {
+                dash_urls.push_str(video_base_url.last().unwrap());
                 dash_urls.push('\n');
-                dash_urls.push_str(&url_a);
-                let resp = client.get(&url_v).header("User-Agent", crate::utils::gen_ua()).header("Range", "bytes=0-1").send().await?;
-                // println!("{:?}", resp.text().await);
+                dash_urls.push_str(audio_base_url.unwrap());
                 dash_urls.push('\n');
-                dash_urls.push_str(resp.headers().get("X-Head-Seqnum").ok_or("get_live err 9")?.to_str()?);
+                dash_urls.push_str(format!("{}", &sq).as_str());
             }
             ret.insert(
                 String::from("title"),

@@ -67,9 +67,11 @@ impl QLivePlayerLibEmitter {
 pub trait QLivePlayerLibTrait {
     fn new(emit: QLivePlayerLibEmitter) -> Self;
     fn emit(&mut self) -> &mut QLivePlayerLibEmitter;
+    fn check_streamer_loading(&self) -> ();
     fn get_danmaku(&mut self) -> String;
     fn get_url(&self, room_url: String, extras: String) -> String;
     fn run_danmaku_client(&mut self, room_url: String) -> ();
+    fn run_streamer(&self, streamer_type: String, url: String, extra: String) -> ();
     fn stop_danmaku_client(&mut self) -> ();
 }
 
@@ -87,6 +89,12 @@ pub extern "C" fn q_live_player_lib_new(
 #[no_mangle]
 pub unsafe extern "C" fn q_live_player_lib_free(ptr: *mut QLivePlayerLib) {
     Box::from_raw(ptr).emit().clear();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn q_live_player_lib_check_streamer_loading(ptr: *const QLivePlayerLib) {
+    let o = &*ptr;
+    o.check_streamer_loading()
 }
 
 #[no_mangle]
@@ -115,6 +123,18 @@ pub unsafe extern "C" fn q_live_player_lib_run_danmaku_client(ptr: *mut QLivePla
     set_string_from_utf16(&mut room_url, room_url_str, room_url_len);
     let o = &mut *ptr;
     o.run_danmaku_client(room_url)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn q_live_player_lib_run_streamer(ptr: *const QLivePlayerLib, streamer_type_str: *const c_ushort, streamer_type_len: c_int, url_str: *const c_ushort, url_len: c_int, extra_str: *const c_ushort, extra_len: c_int) {
+    let mut streamer_type = String::new();
+    set_string_from_utf16(&mut streamer_type, streamer_type_str, streamer_type_len);
+    let mut url = String::new();
+    set_string_from_utf16(&mut url, url_str, url_len);
+    let mut extra = String::new();
+    set_string_from_utf16(&mut extra, extra_str, extra_len);
+    let o = &*ptr;
+    o.run_streamer(streamer_type, url, extra)
 }
 
 #[no_mangle]

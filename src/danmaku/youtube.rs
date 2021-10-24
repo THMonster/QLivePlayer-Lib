@@ -164,6 +164,7 @@ impl Youtube {
         // let client = reqwest::Client::new();
         let resp = client
             .post(format!("https://www.youtube.com/{}", &self.key))
+            .header("Connection", "keep-alive")
             .header("User-Agent", &self.ua)
             .body(body)
             .send()

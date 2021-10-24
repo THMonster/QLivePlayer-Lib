@@ -1,43 +1,69 @@
 {
-    "cppFile": "Binding.cpp",
-    "rust": {
-        "dir": "./",
-        "interfaceModule": "interface",
-        "implementationModule": "implementation"
-    },
-    "objects": {
-        "QLivePlayerLib": {
-            "type": "Object",
-            "functions": {
-                "get_url": {
-                    "return": "QString",
-                    "mut": false,
-                    "arguments": [{
-		        "name": "room_url",
-		        "type": "QString"
-                    },{
-                    
-		        "name": "extras",
-		        "type": "QString"
-                    }]
-                },
-                "run_danmaku_client": {
-                    "return": "void",
-                    "mut": true,
-                    "arguments": [{
-		        "name": "room_url",
-		        "type": "QString"
-                    }]
-                },
-                "stop_danmaku_client": {
-                    "return": "void",
-                    "mut": true
-                },
-                "get_danmaku": {
-                    "return": "QString",
-                    "mut": true
-                }
+  "cppFile": "Binding.cpp",
+  "rust": {
+    "dir": "./",
+    "interfaceModule": "interface",
+    "implementationModule": "implementation"
+  },
+  "objects": {
+    "QLivePlayerLib": {
+      "type": "Object",
+      "functions": {
+        "get_url": {
+          "return": "QString",
+          "mut": false,
+          "arguments": [
+            {
+              "name": "room_url",
+              "type": "QString"
+            },
+            {
+              "name": "extras",
+              "type": "QString"
             }
+          ]
+        },
+        "run_danmaku_client": {
+          "return": "void",
+          "mut": true,
+          "arguments": [
+            {
+              "name": "room_url",
+              "type": "QString"
+            }
+          ]
+        },
+        "stop_danmaku_client": {
+          "return": "void",
+          "mut": true
+        },
+        "get_danmaku": {
+          "return": "QString",
+          "mut": true
+        },
+        "check_streamer_loading": {
+          "return": "void",
+          "mut": false
+        },
+        "run_streamer": {
+          "return": "void",
+          "mut": false,
+          "arguments": [
+            {
+              "name": "streamer_type",
+              "type": "QString"
+            },
+            {
+              "name": "url",
+              "type": "QString"
+            },
+            {
+              "name": "extra",
+              "type": "QString"
+            }
+          ]
         }
+      }
     }
+  }
 }
