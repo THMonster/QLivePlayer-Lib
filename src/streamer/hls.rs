@@ -115,10 +115,10 @@ impl HLS {
                         break;
                     }
                     Err(_) => {
+                        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                         continue;
                     }
                 };
-                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
             }
             match listener.unwrap().accept().await {
                 Ok((stream, _addr)) => Some(stream),
