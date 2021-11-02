@@ -28,6 +28,7 @@ impl HLS {
     }
 
     async fn decode_m3u8(m3u8: &str) -> Result<BTreeMap<u64, String>, Box<dyn std::error::Error>> {
+        info!("{}", &m3u8);
         let lines: Vec<_> = m3u8.split("\n").collect();
         let mut sq = None;
         let mut urls = LinkedList::new();
