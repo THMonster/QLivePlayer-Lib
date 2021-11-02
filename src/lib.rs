@@ -4,6 +4,7 @@ use std::{
 };
 
 use futures::pin_mut;
+use log::warn;
 use tokio::{runtime::Builder, time::sleep};
 
 pub mod danmaku;
@@ -162,23 +163,38 @@ pub fn run_streamer(streamer_type: String, url: String, extra: String, loading: 
     Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
         let check_stop = async move {
             loop {
-                sleep(tokio::time::Duration::from_secs(1)).await;
+                sleep(tokio::time::Duration::from_millis(500)).await;
                 if stop_flag.load(std::sync::atomic::Ordering::SeqCst) {
                     break;
                 }
             }
         };
+        let loading1 = loading.clone();
         let streamer_task = async move {
             if streamer_type.eq("youtube") {
-                let s = streamer::youtube::Youtube::new(url, extra, loading);
+                let s = streamer::youtube::Youtube::new(url, extra, loading1);
                 s.run().await;
             } else if streamer_type.eq("hls") {
-                let s = Arc::new(streamer::hls::HLS::new(url, extra, loading));
-                s.run(s.clone()).await;
+                let s = Arc::new(streamer::hls::HLS::new(url, extra, loading1));
+                match s.run(s.clone()).await {
+                    Ok(_) => {}
+                    Err(err) => {
+                        warn!("hls streamer error: {}", err);
+                    }
+                };
+            } else {
+                let s = Arc::new(streamer::flv::FLV::new(url, extra, loading1));
+                match s.run(s.clone()).await {
+                    Ok(_) => {}
+                    Err(err) => {
+                        warn!("flv streamer error: {}", err);
+                    }
+                };
             }
         };
         pin_mut!(streamer_task);
         pin_mut!(check_stop);
         let _ = futures::future::select(streamer_task, check_stop).await;
+        loading.store(false, std::sync::atomic::Ordering::SeqCst);
     });
 }
