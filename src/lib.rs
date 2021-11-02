@@ -168,13 +168,14 @@ pub fn run_streamer(streamer_type: String, url: String, extra: String, loading: 
                 }
             }
         };
-        let streamer_task = if streamer_type.eq("youtube") {
-            async move {
-                let yt = streamer::youtube::Youtube::new(url, extra, loading);
-                yt.run().await;
+        let streamer_task = async move {
+            if streamer_type.eq("youtube") {
+                let s = streamer::youtube::Youtube::new(url, extra, loading);
+                s.run().await;
+            } else if streamer_type.eq("hls") {
+                let s = Arc::new(streamer::hls::HLS::new(url, extra, loading));
+                s.run(s.clone()).await;
             }
-        } else {
-            return;
         };
         pin_mut!(streamer_task);
         pin_mut!(check_stop);
