@@ -109,7 +109,6 @@ impl HLS {
         let stream = {
             let mut listener = None;
             for _ in 0..15 {
-                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                 match UnixListener::bind(&self.stream_socket) {
                     Ok(it) => {
                         listener = Some(it);
@@ -119,6 +118,7 @@ impl HLS {
                         continue;
                     }
                 };
+                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
             }
             match listener.unwrap().accept().await {
                 Ok((stream, _addr)) => Some(stream),
