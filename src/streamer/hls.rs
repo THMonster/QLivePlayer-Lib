@@ -107,8 +107,20 @@ impl HLS {
 
     pub async fn run(&self, arc_self: Arc<HLS>) {
         let stream = {
-            let listener = UnixListener::bind(&self.stream_socket).unwrap();
-            match listener.accept().await {
+            let mut listener = None;
+            for _ in 0..15 {
+                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+                match UnixListener::bind(&self.stream_socket) {
+                    Ok(it) => {
+                        listener = Some(it);
+                        break;
+                    }
+                    Err(_) => {
+                        continue;
+                    }
+                };
+            }
+            match listener.unwrap().accept().await {
                 Ok((stream, _addr)) => Some(stream),
                 Err(_) => None,
             }
