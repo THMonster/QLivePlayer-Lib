@@ -194,7 +194,6 @@ impl Youtube {
         let sq = match self.get_dash_sq().await {
             Some(it) => it,
             None => {
-                self.loading.store(false, std::sync::atomic::Ordering::SeqCst);
                 println!("youtube streamer get sq error");
                 return;
             }
@@ -218,7 +217,6 @@ impl Youtube {
         pin_mut!(vtask);
         pin_mut!(atask);
         let _ = futures::future::select(vtask, atask).await;
-        self.loading.store(false, std::sync::atomic::Ordering::SeqCst);
         info!("youtube streamer exit");
     }
 }

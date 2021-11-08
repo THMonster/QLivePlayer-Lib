@@ -62,7 +62,7 @@ impl QLivePlayerLibTrait for QLivePlayerLib {
 
     fn stop_danmaku_client(&mut self) -> () {
         self.stop_flag.fetch_or(true, std::sync::atomic::Ordering::SeqCst);
-        sleep(Duration::from_millis(1200));
+        sleep(Duration::from_millis(500));
     }
 
     fn check_streamer_loading(&self) -> () {
