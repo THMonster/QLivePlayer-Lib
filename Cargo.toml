@@ -35,5 +35,5 @@ roxmltree = "*"
 tars-stream = { path = "tars-stream"}
 
 [lib]
-name = "rust"
-crate-type = ["staticlib"]
+name = "qliveplayer_lib"
+path = "src/lib.rs"

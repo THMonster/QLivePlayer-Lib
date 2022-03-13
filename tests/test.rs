@@ -5,6 +5,8 @@ use std::{
 };
 use tokio::runtime::Builder;
 
+extern crate qliveplayer_lib;
+
 struct TestUrl {
     bilibili_live_url: String,
     bilibili_video_url: String,
