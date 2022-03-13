@@ -14,6 +14,7 @@ struct TestUrl {
     huya_live_url: String,
     youtube_live_url: String,
     twitch_live_url: String,
+    cc_live_url: String,
 }
 impl TestUrl {
     pub fn new() -> Self {
@@ -24,6 +25,7 @@ impl TestUrl {
             huya_live_url: "https://www.huya.com/825801".to_owned(),
             youtube_live_url: "https://www.youtube.com/watch?v=5XDDUMAl1sE".to_owned(),
             twitch_live_url: "https://www.twitch.tv/okcode".to_owned(),
+            cc_live_url: "https://cc.163.com/361433".to_owned(),
         }
     }
 }
@@ -94,6 +96,18 @@ fn test_twitch_live() {
         println!(
             "{:?}",
             b.get_live(u.twitch_live_url.as_ref()).await.unwrap()
+        );
+    });
+}
+
+#[test]
+fn test_cc_live() {
+    Builder::new_current_thread().enable_all().build().unwrap().block_on(async move {
+        let u = TestUrl::new();
+        let b = qliveplayer_lib::streamfinder::cc::CC::new();
+        println!(
+            "{:?}",
+            b.get_live(u.cc_live_url.as_ref()).await.unwrap()
         );
     });
 }

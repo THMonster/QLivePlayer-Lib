@@ -3,3 +3,4 @@ pub mod douyu;
 pub mod huya;
 pub mod youtube;
 pub mod twitch;
+pub mod cc;

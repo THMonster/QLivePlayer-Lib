@@ -16,7 +16,7 @@ reqwest = { version = "*", default-features = false, features = ["gzip", "json",
 log = "*"
 env_logger = "*"
 httparse = "*"
-serde_json = "*"
+serde_json = { version = "*", features = ["preserve_order"] }
 serde = { version = "1", features = ["derive"] }
 bincode = "*"
 rand = "*"
@@ -33,6 +33,7 @@ html-escape = "*"
 futures = "0.3"
 roxmltree = "*"
 tars-stream = { path = "tars-stream"}
+structure = "0.1"
 
 [lib]
 name = "qliveplayer_lib"

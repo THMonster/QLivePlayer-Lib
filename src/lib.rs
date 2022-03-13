@@ -6,6 +6,9 @@ use std::{
 use futures::pin_mut;
 use tokio::{runtime::Builder, time::sleep};
 
+#[macro_use]
+extern crate structure;
+
 pub mod danmaku;
 mod implementation;
 pub mod interface;
@@ -79,6 +82,18 @@ pub fn get_url(url: &str, extras: &str) -> String {
             };
         } else if url.contains("twitch.tv/") {
             let b = streamfinder::twitch::Twitch::new();
+            match b.get_live(url).await {
+                Ok(it) => {
+                    ret.push_str(it["title"].as_str());
+                    ret.push_str("\n");
+                    ret.push_str(it["url"].as_str());
+                }
+                _ => {
+                    ret.push_str("qlp_nostream");
+                }
+            };
+        } else if url.contains("cc.163.com/") {
+            let b = streamfinder::cc::CC::new();
             match b.get_live(url).await {
                 Ok(it) => {
                     ret.push_str(it["title"].as_str());
